@@ -223,7 +223,7 @@ class SocialNetwork:
         if record:
             self.capture_frame()
 
-    def save_animation_as_gif(self, filename="animation.gif", duration=20):
+    def save_animation_as_gif(self, filename="animation.gif", duration=200):
         """
         Save the recorded frames as an animated GIF.
         Make sure that recording has been enabled during plotting (record=True).

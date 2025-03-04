@@ -4,7 +4,7 @@ class Traits:
 
 
 class ImmutableTraits(Traits):
-    def __init__(self, naivety=0, trust_threshold=-10):
+    def __init__(self, naivety=0, trust_threshold=-1):
         self.naivety = naivety
         self.trust_threshold = trust_threshold
 
