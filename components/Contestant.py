@@ -23,6 +23,16 @@ class Contestant:
         self.mutable_traits = mutable_traits
         self.estimated_social_network = None
 
+    def get_trust(self):
+        """Returns an array of neighbours-perceived_trust of a constestant."""
+        trust_neighbours = {}
+        for u, v, data in self.estimated_social_network.graph.edges(data=True):
+            if self in {u,v}:
+                # Convention for trust dictionary {u.name: trust(u->v), ... }
+                neighbour = u if v is self else v
+                trust_neighbours[neighbour] = data["relationship"].trust[self.name]
+        return trust_neighbours
+
     def get_vote(self):
         return self.voting_strategy.choose(self)
 

@@ -223,13 +223,13 @@ class SocialNetwork:
         if record:
             self.capture_frame()
 
-    def save_animation_as_gif(self, filename="animation.gif", fps=2):
+    def save_animation_as_gif(self, filename="animation.gif", duration=20):
         """
         Save the recorded frames as an animated GIF.
         Make sure that recording has been enabled during plotting (record=True).
         """
         if self.frames:
-            imageio.mimsave(filename, self.frames, fps=fps)
+            imageio.mimsave(filename, self.frames, duration=duration)
             print(f"Animation saved as {filename}")
         else:
             print("No frames were recorded; animation not saved.")

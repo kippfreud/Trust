@@ -4,7 +4,7 @@ import time
 from components.Contestant import Contestant
 from components.InteractionStrategies import RandomInteractionChoice
 from components.SocialNetwork import SocialNetwork
-from components.VotingStrategies import RandomVoteChoice
+from components.VotingStrategies import RandomVoteChoice,TrustVoteChoice 
 
 
 def main():
@@ -13,10 +13,11 @@ def main():
 
     contestants = []
     # Create 10 contestants, each assigned the next available name in order.
-    for _ in range(30):
+    for _ in range(15):
         contestant = Contestant(
             name=game_network.get_next_name(),
-            voting_strategy=RandomVoteChoice(),
+            #voting_strategy=RandomVoteChoice(),
+            voting_strategy=TrustVoteChoice(),
             interaction_strategy=RandomInteractionChoice(),
         )
         contestants.append(contestant)
