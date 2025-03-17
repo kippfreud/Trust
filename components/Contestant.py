@@ -3,9 +3,10 @@ import string
 from copy import deepcopy
 
 from components.InteractionStrategies import InteractionStrategy
+from components.SocialNetwork import SocialNetwork
 from components.Traits import ImmutableTraits, MutableTraits
 from components.VotingStrategies import VotingStrategy
-from components.SocialNetwork import SocialNetwork
+
 
 class Contestant:
     def __init__(
@@ -26,8 +27,12 @@ class Contestant:
 
     def generate_estimated_social_network(self, true_network):
         if self.estimated_social_network is not None:
-            raise Exception("Trying to generate an estimated social network where one already exists.")
-        self.estimated_social_network = self._generate_estimated_social_network(true_network)
+            raise Exception(
+                "Trying to generate an estimated social network where one already exists."
+            )
+        self.estimated_social_network = self._generate_estimated_social_network(
+            true_network
+        )
         for c in self.estimated_social_network.iter_contestants():
             c.estimated_social_network = self.estimated_social_network
 
@@ -35,7 +40,7 @@ class Contestant:
         """Returns an array of neighbours-perceived_trust of a constestant."""
         trust_neighbours = {}
         for u, v, data in self.estimated_social_network.graph.edges(data=True):
-            if self in {u,v}:
+            if self in {u, v}:
                 # Convention for trust dictionary {u.name: trust(u->v), ... }
                 neighbour = u if v is self else v
                 trust_neighbours[neighbour] = data["relationship"].trust[self.name]

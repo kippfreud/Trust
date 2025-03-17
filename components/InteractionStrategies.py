@@ -12,15 +12,11 @@ class RandomInteractionChoice(InteractionStrategy):
         In this strategy, the voter will choose 1 interacter and 1 target at random
         """
         possible_interacted = [
-            c
-            for c in true_net.get_all_contestants()
-            if c is not voter
+            c for c in true_net.get_all_contestants() if c is not voter
         ]
         interacted = random.sample(possible_interacted, 1)
         possible_targets = [
-            c
-            for c in true_net.get_all_contestants()
-            if c not in interacted
+            c for c in true_net.get_all_contestants() if c not in interacted
         ]
         target = random.sample(possible_targets, 1)
         possible_interactions = [Increase_Trust, Decrease_Trust]
@@ -50,8 +46,12 @@ class Increase_Trust(Interaction):
                 relationship = social_net.graph.get_edge_data(a, b)["relationship"]
                 relationship.trust[a.name] += 1
 
-                a.estimated_social_network.graph.get_edge_data(a, b)["relationship"].trust[a.name] += 1
-                b.estimated_social_network.graph.get_edge_data(a, b)["relationship"].trust[a.name] += 1
+                a.estimated_social_network.graph.get_edge_data(a, b)[
+                    "relationship"
+                ].trust[a.name] += 1
+                b.estimated_social_network.graph.get_edge_data(a, b)[
+                    "relationship"
+                ].trust[a.name] += 1
 
     def failure(self, social_net):
         # On failure, the interacted group will trust the interactor less
@@ -60,8 +60,12 @@ class Increase_Trust(Interaction):
                 "relationship"
             ]
             relationship.trust[a.name] -= 1
-            a.estimated_social_network.graph.get_edge_data(a, self.interactor)["relationship"].trust[a.name] -= 1
-            self.interactor.estimated_social_network.graph.get_edge_data(a, self.interactor)["relationship"].trust[a.name] -= 1
+            a.estimated_social_network.graph.get_edge_data(a, self.interactor)[
+                "relationship"
+            ].trust[a.name] -= 1
+            self.interactor.estimated_social_network.graph.get_edge_data(
+                a, self.interactor
+            )["relationship"].trust[a.name] -= 1
 
 
 class Decrease_Trust(Interaction):
@@ -71,8 +75,12 @@ class Decrease_Trust(Interaction):
             for b in self.target_group:
                 relationship = social_net.graph.get_edge_data(a, b)["relationship"]
                 relationship.trust[a.name] -= 1
-                a.estimated_social_network.graph.get_edge_data(a, b)["relationship"].trust[a.name] -= 1
-                b.estimated_social_network.graph.get_edge_data(a, b)["relationship"].trust[a.name] -= 1
+                a.estimated_social_network.graph.get_edge_data(a, b)[
+                    "relationship"
+                ].trust[a.name] -= 1
+                b.estimated_social_network.graph.get_edge_data(a, b)[
+                    "relationship"
+                ].trust[a.name] -= 1
 
     def failure(self, social_net):
         # On failure, the interacted group will trust the interactor less
@@ -81,5 +89,9 @@ class Decrease_Trust(Interaction):
                 "relationship"
             ]
             relationship.trust[a.name] -= 1
-            a.estimated_social_network.graph.get_edge_data(a, self.interactor)["relationship"].trust[a.name] -= 1
-            self.interactor.estimated_social_network.graph.get_edge_data(a, self.interactor)["relationship"].trust[a.name] -= 1
+            a.estimated_social_network.graph.get_edge_data(a, self.interactor)[
+                "relationship"
+            ].trust[a.name] -= 1
+            self.interactor.estimated_social_network.graph.get_edge_data(
+                a, self.interactor
+            )["relationship"].trust[a.name] -= 1

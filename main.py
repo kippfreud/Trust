@@ -5,7 +5,7 @@ from copy import deepcopy
 from components.Contestant import Contestant
 from components.InteractionStrategies import RandomInteractionChoice
 from components.SocialNetwork import SocialNetwork
-from components.VotingStrategies import RandomVoteChoice,TrustVoteChoice 
+from components.VotingStrategies import RandomVoteChoice, TrustVoteChoice
 
 
 def main():

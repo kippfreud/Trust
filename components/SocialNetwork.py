@@ -9,7 +9,8 @@ import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from components.InteractionHandlers import InteractionHandler, RandomInteractionHandler
+from components.InteractionHandlers import (InteractionHandler,
+                                            RandomInteractionHandler)
 from components.RelationshipLink import RelationshipLink
 from components.Signals import SplitSignal
 
