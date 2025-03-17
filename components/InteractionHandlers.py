@@ -3,8 +3,7 @@ import random
 
 class InteractionHandler:
     def get_interaction_success(self, net, interaction):
-        print("This function should be overwritten by derived class!")
-        exit(1)
+        raise Exception("This function should be overwritten by derived class!")
 
 
 class RandomInteractionHandler(InteractionHandler):

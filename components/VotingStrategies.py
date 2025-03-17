@@ -6,9 +6,7 @@ from components.Signals import SplitSignal
 
 class VotingStrategy:
     def choose(self, voter):
-        print("This function should be overwritten by derived class!")
-        exit(1)
-
+        raise Exception("This function should be overwritten by derived class!")
 
 class RandomVoteChoice(VotingStrategy):
     def choose(self, voter):
@@ -24,7 +22,7 @@ class TrustVoteChoice(VotingStrategy):
     Trust-based vote: Split if voter trusts all its neighbours at least voter.trust_threshold
     """
     def choose(self, voter):
-        trust_voter = np.array(list(voter.get_trust().items()))
+        trust_voter = np.array(list(voter.get_perceived_trust().items()))
         if all(trust_voter[:,1]>voter.immutable_traits.trust_threshold) or len(trust_voter)== 0: 
             return SplitSignal
         else:
