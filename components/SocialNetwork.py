@@ -3,6 +3,7 @@ import networkx as nx
 
 matplotlib.use("TkAgg")
 import json
+import random
 from collections import Counter
 
 import imageio
@@ -52,26 +53,49 @@ class SocialNetwork:
         :return: The removed contestant
         """
         sim_vote = self.simulate_vote()
-        if sim_vote[0] is None:
+        if sim_vote[0] is SplitSignal:
             self.split = True
             print("Splitting Money")
-            return None
+            return SplitSignal
         else:
             print(f"Evicting {sim_vote[0]}: Count = {sim_vote[1]}")
             self.remove_contestant(sim_vote[0])
             return sim_vote[0]
 
+    def sample_trust(self):
+        """
+        Will populate the realized_trust values of all edges based on the trust_mean and trust_var values.
+        """
+        for u, v, data in self.graph.edges(data=True):
+            data["relationship"].realized_trust[u.name] = random.gauss(
+                data["relationship"].trust_mean[u.name],
+                data["relationship"].trust_var[u.name],
+            )
+            data["relationship"].realized_trust[v.name] = random.gauss(
+                data["relationship"].trust_mean[v.name],
+                data["relationship"].trust_var[v.name],
+            )
+
+    def clear_realized_trust(self):
+        """
+        Will populate the realized_trust values of all edges based on the trust_mean and trust_var values.
+        """
+        for u, v, data in self.graph.edges(data=True):
+            data["relationship"].realized_trust[u.name] = None
+            data["relationship"].realized_trust[v.name] = None
+
     def simulate_vote(self):
         """
         Generates the results of a vote. No actions will be taken.
         """
+        self.sample_trust()
         votes = []
         for c in self.iter_contestants():
             votes.append(c.get_vote())
         count = Counter(votes)
         if len(count.keys()) == 1 and list(count.keys())[0] == SplitSignal:
             self.split = True
-            return None, None
+            return SplitSignal, None
         else:
             if SplitSignal in count.keys():
                 count.pop(SplitSignal)
@@ -184,7 +208,7 @@ class SocialNetwork:
         for u, v, data in self.graph.edges(data=True):
             rel_link = data["relationship"]
             trust_str = ", ".join(
-                [f"{name}:{val}" for name, val in rel_link.trust.items()]
+                [f"{name}:{val}" for name, val in rel_link.realized_trust.items()]
             )
             edge_labels[(u, v)] = trust_str
         nx.draw_networkx_edge_labels(

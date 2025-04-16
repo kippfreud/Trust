@@ -15,7 +15,7 @@ class RandomVoteChoice(VotingStrategy):
         contestants = [
             c
             for c in voter.estimated_social_network.get_all_contestants()
-            if c is not voter
+            if c is not voter and not c.immune_from_votes
         ]
         return random.choice(contestants + [SplitSignal])
 
@@ -26,8 +26,14 @@ class TrustVoteChoice(VotingStrategy):
     """
 
     def choose(self, voter):
-        trust_voter = np.array(list(voter.get_perceived_trust().items()))
-        if (
+        trust = {
+            c: t for c, t in voter.get_true_trust().items() if not c.immune_from_votes
+        }
+        trust_voter = np.array(list(trust.items()))
+        if trust == {}:
+            # There is nobody to choose, we must split
+            return SplitSignal
+        elif (
             all(trust_voter[:, 1] > voter.immutable_traits.trust_threshold)
             or len(trust_voter) == 0
         ):

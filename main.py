@@ -31,13 +31,15 @@ def main():
         c.generate_estimated_social_network(copynet)
     del copynet
 
+    game_network.sample_trust()
     for round_i in range(len(contestants)):
         game_network.plot()
         time.sleep(0.1)
         game_network.interaction_phase()
         for c in game_network.iter_contestants():
-            ret = c.estimated_social_network.simulate_vote()
-            print(f"{c} Thinks {ret[0]} will be evicted!")
+            MC_results = c.MC_simulate_games(100)
+            # print(f"{c} Thinks {ret[0]} will be evicted!")
+            print(f"MC Results Simulated for {c.name}")
         outcome = game_network.voting_phase()
         if game_network.split:
             break

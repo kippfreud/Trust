@@ -44,14 +44,14 @@ class Increase_Trust(Interaction):
         for a in self.interacted_group:
             for b in self.target_group:
                 relationship = social_net.graph.get_edge_data(a, b)["relationship"]
-                relationship.trust[a.name] += 1
+                relationship.trust_mean[a.name] += 1
 
                 a.estimated_social_network.graph.get_edge_data(a, b)[
                     "relationship"
-                ].trust[a.name] += 1
+                ].trust_mean[a.name] += 1
                 b.estimated_social_network.graph.get_edge_data(a, b)[
                     "relationship"
-                ].trust[a.name] += 1
+                ].trust_mean[a.name] += 1
 
     def failure(self, social_net):
         # On failure, the interacted group will trust the interactor less
@@ -59,13 +59,13 @@ class Increase_Trust(Interaction):
             relationship = social_net.graph.get_edge_data(a, self.interactor)[
                 "relationship"
             ]
-            relationship.trust[a.name] -= 1
+            relationship.trust_mean[a.name] -= 1
             a.estimated_social_network.graph.get_edge_data(a, self.interactor)[
                 "relationship"
-            ].trust[a.name] -= 1
+            ].trust_mean[a.name] -= 1
             self.interactor.estimated_social_network.graph.get_edge_data(
                 a, self.interactor
-            )["relationship"].trust[a.name] -= 1
+            )["relationship"].trust_mean[a.name] -= 1
 
 
 class Decrease_Trust(Interaction):
@@ -74,13 +74,13 @@ class Decrease_Trust(Interaction):
         for a in self.interacted_group:
             for b in self.target_group:
                 relationship = social_net.graph.get_edge_data(a, b)["relationship"]
-                relationship.trust[a.name] -= 1
+                relationship.trust_mean[a.name] -= 1
                 a.estimated_social_network.graph.get_edge_data(a, b)[
                     "relationship"
-                ].trust[a.name] -= 1
+                ].trust_mean[a.name] -= 1
                 b.estimated_social_network.graph.get_edge_data(a, b)[
                     "relationship"
-                ].trust[a.name] -= 1
+                ].trust_mean[a.name] -= 1
 
     def failure(self, social_net):
         # On failure, the interacted group will trust the interactor less
@@ -88,10 +88,10 @@ class Decrease_Trust(Interaction):
             relationship = social_net.graph.get_edge_data(a, self.interactor)[
                 "relationship"
             ]
-            relationship.trust[a.name] -= 1
+            relationship.trust_mean[a.name] -= 1
             a.estimated_social_network.graph.get_edge_data(a, self.interactor)[
                 "relationship"
-            ].trust[a.name] -= 1
+            ].trust_mean[a.name] -= 1
             self.interactor.estimated_social_network.graph.get_edge_data(
                 a, self.interactor
-            )["relationship"].trust[a.name] -= 1
+            )["relationship"].trust_mean[a.name] -= 1
