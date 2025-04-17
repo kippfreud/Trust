@@ -3,13 +3,15 @@ import networkx as nx
 
 matplotlib.use("TkAgg")
 import json
+import random
 from collections import Counter
 
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from components.InteractionHandlers import InteractionHandler, RandomInteractionHandler
+from components.InteractionHandlers import (InteractionHandler,
+                                            RandomInteractionHandler)
 from components.RelationshipLink import RelationshipLink
 from components.Signals import SplitSignal
 
@@ -51,22 +53,56 @@ class SocialNetwork:
         Will collect votes for all contestants, and either evict a contestant or end the game if all split
         :return: The removed contestant
         """
+        sim_vote = self.simulate_vote()
+        if sim_vote[0] is SplitSignal:
+            self.split = True
+            print("Splitting Money")
+            return SplitSignal
+        else:
+            print(f"Evicting {sim_vote[0]}: Count = {sim_vote[1]}")
+            self.remove_contestant(sim_vote[0])
+            return sim_vote[0]
+
+    def sample_trust(self):
+        """
+        Will populate the realized_trust values of all edges based on the trust_mean and trust_var values.
+        """
+        for u, v, data in self.graph.edges(data=True):
+            data["relationship"].realized_trust[u.name] = random.gauss(
+                data["relationship"].trust_mean[u.name],
+                data["relationship"].trust_var[u.name],
+            )
+            data["relationship"].realized_trust[v.name] = random.gauss(
+                data["relationship"].trust_mean[v.name],
+                data["relationship"].trust_var[v.name],
+            )
+
+    def clear_realized_trust(self):
+        """
+        Will populate the realized_trust values of all edges based on the trust_mean and trust_var values.
+        """
+        for u, v, data in self.graph.edges(data=True):
+            data["relationship"].realized_trust[u.name] = None
+            data["relationship"].realized_trust[v.name] = None
+
+    def simulate_vote(self):
+        """
+        Generates the results of a vote. No actions will be taken.
+        """
+        self.sample_trust()
         votes = []
         for c in self.iter_contestants():
             votes.append(c.get_vote())
         count = Counter(votes)
         if len(count.keys()) == 1 and list(count.keys())[0] == SplitSignal:
-            print("Splitting Money")
             self.split = True
-            return None
+            return SplitSignal, None
         else:
             if SplitSignal in count.keys():
                 count.pop(SplitSignal)
             self.latest_vote = count # Stored for reaction phase
             evicted = count.most_common(1)[0][0]
-            self.remove_contestant(evicted)
-            print(f"Evicting {evicted}")
-            return evicted
+            return evicted, count
 
     def interaction_phase(self):
         """
@@ -74,20 +110,22 @@ class SocialNetwork:
         """
         interactions = []
         for c in self.iter_contestants():
-            interactions.append(c.get_interaction())
+            interactions.append(c.get_interaction(self))
         for interaction in interactions:
             if self.interaction_handler.get_interaction_success(self, interaction):
                 interaction.success(self)
             else:
                 interaction.failure(self)
 
-    def reaction_phase(self):
+    def voting_outcome_reaction_phase(self, outcome):
         """
-        Agents react to the previous vote, and adjust their internal parameters
+        Agents react to the previous vote, and adjust their internal parameters.
+        Currently, only outcome which will be reacted to is the voting out of a
+        contestant, in which case all contestants update their internal social
+        net to reflect the eviction.
         """
-        # Currently, the agents are naive to the voting ..todo:
         for c in self.iter_contestants():
-            c.react_voting_outcome(self.latest_vote)
+            c.estimated_social_network.remove_contestant(outcome)
 
     def iter_contestants(self):
         """Returns an iterator over all contestants in the network."""
@@ -113,19 +151,12 @@ class SocialNetwork:
             if other != contestant and not self.graph.has_edge(contestant, other):
                 rel_link = RelationshipLink(contestant, other)
                 self.graph.add_edge(contestant, other, relationship=rel_link)
-        self._update_estimated_network()
 
     def remove_contestant(self, contestant):
         if self.graph.has_node(contestant):
             self.graph.remove_node(contestant)
-            self._update_estimated_network()
         else:
-            print(f"WARNING: There is no contestant {contestant}")
-            exit(1)
-
-    def _update_estimated_network(self):
-        for contestant in self.graph.nodes:
-            contestant.estimated_social_network = self
+            raise ValueError(f"WARNING: There is no contestant {contestant}")
 
     def capture_frame(self):
         """Capture the current figure canvas as an RGB image and store it."""
@@ -179,7 +210,7 @@ class SocialNetwork:
         for u, v, data in self.graph.edges(data=True):
             rel_link = data["relationship"]
             trust_str = ", ".join(
-                [f"{name}:{val}" for name, val in rel_link.trust.items()]
+                [f"{name}:{val}" for name, val in rel_link.realized_trust.items()]
             )
             edge_labels[(u, v)] = trust_str
         nx.draw_networkx_edge_labels(

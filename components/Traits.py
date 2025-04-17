@@ -8,6 +8,7 @@ class ImmutableTraits(Traits):
         self.naivety = naivety
         self.trust_threshold = trust_threshold
 
+
 class MutableTraits(Traits):
     def __init__(self, paranoia=0):
         self.paranoia = paranoia
