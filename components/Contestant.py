@@ -76,18 +76,16 @@ class Contestant:
                     r_t is not None
                 ), "If trust variance > 0, realized trust must exist"
                 trust_neighbours[neighbour] = r_t
-        return trust_neighbours
+        return trust_neighbours        
 
     def get_vote(self):
         return self.voting_strategy.choose(self)
 
-    def get_interaction(self, true_net):
-        return self.interaction_strategy.choose(true_net, self)
-    def get_interaction(self, latest_vote = None):
-        if latest_vote is None:
-            return self.interaction_strategy.choose(self)
-        else:
-            return self.interaction_strategy.react(self, latest_vote)
+    def get_interaction(self, true_net, latest_vote = None):
+        params = {"true_net":true_net, 
+                  "voter": self, 
+                  "latest_vote":latest_vote}
+        return self.interaction_strategy.choose(**params)
         
     def simulate_vote():
         # TODO: Choose how to simulate votes

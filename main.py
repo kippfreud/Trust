@@ -3,7 +3,7 @@ import time
 from copy import deepcopy
 
 from components.Contestant import Contestant
-from components.InteractionStrategies import RandomInteractionChoice
+from components.InteractionStrategies import RandomInteractionChoice, BeliefInteractionChoice
 from components.SocialNetwork import SocialNetwork
 from components.VotingStrategies import RandomVoteChoice, TrustVoteChoice
 
@@ -21,6 +21,11 @@ def main():
             voting_strategy=TrustVoteChoice(),
             interaction_strategy=RandomInteractionChoice(),
         )
+        
+        # Test new Interaction Strategy
+        if contestant.name == "Kipp":
+            contestant.interaction_strategy = BeliefInteractionChoice()
+
         contestants.append(contestant)
         game_network.add_contestant(contestant)
     # game_network.plot()

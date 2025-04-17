@@ -59,7 +59,8 @@ class SocialNetwork:
             print("Splitting Money")
             return SplitSignal
         else:
-            print(f"Evicting {sim_vote[0]}: Count = {sim_vote[1]}")
+            #TODO: Resolve ties.
+            print(f"Evicting {sim_vote[0].name}: Count = {sim_vote[1]}")
             self.remove_contestant(sim_vote[0])
             return sim_vote[0]
 
@@ -187,7 +188,7 @@ class SocialNetwork:
 
         # Increment the round counter and set the figure-level title.
         self.current_round += 1
-        self.fig.suptitle(f"A Game of Trust - Round {self.current_round}", fontsize=16)
+        self.fig.suptitle(f"A Game of Trust - Round {self.current_round}\n Latest vote: {self.latest_vote}", fontsize=16)
 
         # Compute or update layout.
         if not self.pos or not fixed:
@@ -251,7 +252,7 @@ class SocialNetwork:
         # Update the figure non-blockingly.
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-        plt.pause(0.001)
+        plt.pause(0.1)
 
         # Capture the frame if recording is enabled.
         if record:
