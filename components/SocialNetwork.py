@@ -28,6 +28,7 @@ class SocialNetwork:
         self.split = False
         self.graph = nx.Graph()
         self.current_round = 0
+        self.latest_vote = None
 
         # Game tools
         self.interaction_handler = interaction_handler
@@ -61,6 +62,7 @@ class SocialNetwork:
         else:
             if SplitSignal in count.keys():
                 count.pop(SplitSignal)
+            self.latest_vote = count # Stored for reaction phase
             evicted = count.most_common(1)[0][0]
             self.remove_contestant(evicted)
             print(f"Evicting {evicted}")
@@ -84,7 +86,8 @@ class SocialNetwork:
         Agents react to the previous vote, and adjust their internal parameters
         """
         # Currently, the agents are naive to the voting ..todo:
-        pass
+        for c in self.iter_contestants():
+            c.react_voting_outcome(self.latest_vote)
 
     def iter_contestants(self):
         """Returns an iterator over all contestants in the network."""

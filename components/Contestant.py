@@ -1,7 +1,7 @@
 import random
 import string
 
-from components.InteractionStrategies import InteractionStrategy
+from components.InteractionStrategies import InteractionStrategy, BeliefInteractionChoice
 from components.Traits import ImmutableTraits, MutableTraits
 from components.VotingStrategies import VotingStrategy
 
@@ -11,7 +11,7 @@ class Contestant:
         self,
         name: str,
         voting_strategy: VotingStrategy,
-        interaction_strategy: InteractionStrategy,
+        interaction_strategy: InteractionStrategy = BeliefInteractionChoice(),
         immutable_traits: ImmutableTraits = ImmutableTraits(),
         mutable_traits: MutableTraits = MutableTraits(),
     ):
@@ -36,8 +36,15 @@ class Contestant:
     def get_vote(self):
         return self.voting_strategy.choose(self)
 
-    def get_interaction(self):
-        return self.interaction_strategy.choose(self)
+    def get_interaction(self, latest_vote = None):
+        if latest_vote is None:
+            return self.interaction_strategy.choose(self)
+        else:
+            return self.interaction_strategy.react(self, latest_vote)
+        
+    def simulate_vote():
+        # TODO: Choose how to simulate votes
+        return None 
 
     def _generate_random_name(self, length=6):
         # Fallback method in case no name is provided.
