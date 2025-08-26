@@ -76,7 +76,22 @@ class Contestant:
                     r_t is not None
                 ), "If trust variance > 0, realized trust must exist"
                 trust_neighbours[neighbour] = r_t
-        return trust_neighbours        
+        return trust_neighbours
+
+    def set_trust_preference(self, game_network, more_trusted, less_trusted):
+        """Sets the trust values in the true network such that `more_trusted` is trusted more than `less_trusted`."""
+        if (more_trusted or less_trusted) not in game_network.graph.nodes:
+            raise ValueError("Both contestants must be in the network.")
+        
+        edge_more = game_network.graph[self][more_trusted]["relationship"]
+        edge_less = game_network.graph[self][less_trusted]["relationship"]
+
+        # Ensure more_trusted has higher trust
+        val_more = max(edge_more.realized_trust[more_trusted.name], edge_less.realized_trust[less_trusted.name])
+        val_less = min(edge_more.realized_trust[more_trusted.name], edge_less.realized_trust[less_trusted.name])
+        edge_more.realized_trust[more_trusted.name] = val_more
+        edge_less.realized_trust[less_trusted.name] = val_less  
+        print(edge_more, edge_less)   
 
     def get_vote(self):
         return self.voting_strategy.choose(self)

@@ -64,19 +64,35 @@ class SocialNetwork:
             self.remove_contestant(sim_vote[0])
             return sim_vote[0]
 
-    def sample_trust(self):
+    def sample_trust(self, type="gauss"):
         """
         Will populate the realized_trust values of all edges based on the trust_mean and trust_var values.
         """
-        for u, v, data in self.graph.edges(data=True):
-            data["relationship"].realized_trust[u.name] = random.gauss(
-                data["relationship"].trust_mean[u.name],
-                data["relationship"].trust_var[u.name],
-            )
-            data["relationship"].realized_trust[v.name] = random.gauss(
-                data["relationship"].trust_mean[v.name],
-                data["relationship"].trust_var[v.name],
-            )
+        if type == "gauss":
+            for u, v, data in self.graph.edges(data=True):
+                data["relationship"].realized_trust[u.name] = random.gauss(
+                    data["relationship"].trust_mean[u.name],
+                    data["relationship"].trust_var[u.name],
+                )
+                data["relationship"].realized_trust[v.name] = random.gauss(
+                    data["relationship"].trust_mean[v.name],
+                    data["relationship"].trust_var[v.name],
+                )
+        else:
+            # Random edge weights
+            for u, v, data in self.graph.edges(data=True):
+                data["relationship"].realized_trust[u.name] = random.uniform(0,1)
+                data["relationship"].realized_trust[v.name] = random.uniform(0,1)
+
+    def declared_trust(self):
+        """ 
+        Agents report their current trust values to their neighbors with some noise.
+        """
+        declared = nx.Graph()
+        # Add nodes for each contestant
+        for c in self.iter_contestants():
+            declared.add_node(c.name, contestant=c)
+
 
     def clear_realized_trust(self):
         """
@@ -135,6 +151,13 @@ class SocialNetwork:
     def get_all_contestants(self):
         """Returns a list of all contestants in the network."""
         return list(self.graph.nodes)
+    
+    def get_contestant_by_name(self, name):
+        """Returns a contestant by name, or None if not found."""
+        for c in self.iter_contestants():
+            if c.name == name:
+                return c
+        return None
 
     def get_next_name(self):
         if self.available_names:
@@ -211,7 +234,7 @@ class SocialNetwork:
         for u, v, data in self.graph.edges(data=True):
             rel_link = data["relationship"]
             trust_str = ", ".join(
-                [f"{name}:{val}" for name, val in rel_link.realized_trust.items()]
+                [f"{name}:{round(val, 3)}" for name, val in rel_link.realized_trust.items()]
             )
             edge_labels[(u, v)] = trust_str
         nx.draw_networkx_edge_labels(
