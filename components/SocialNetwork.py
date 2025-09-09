@@ -88,11 +88,10 @@ class SocialNetwork:
         """ 
         Agents report their current trust values to their neighbors with some noise.
         """
-        declared = nx.Graph()
+        declared = SocialNetwork()
         # Add nodes for each contestant
         for c in self.iter_contestants():
             declared.add_node(c.name, contestant=c)
-
 
     def clear_realized_trust(self):
         """

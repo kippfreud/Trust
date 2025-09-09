@@ -10,3 +10,14 @@ class RelationshipLink:
     def __repr__(self):
         #return f"RelationshipLink(trust={self.trust_mean}, var={self.trust_var}, realized={self.realized_trust})"
         return f"RelationshipLink(realized={self.realized_trust})"
+    
+    def safe_link(self, contestant):
+        """Asks if the contestant believes they are above the other's trust threshold."""
+        if contestant.name not in self.realized_trust.keys():
+            raise ValueError("Contestant not part of this relationship link.")
+        
+        my_name = list(self.realized_trust.keys() - {contestant.name})
+        if len(my_name) != 1:
+            raise ValueError("There should be exactly one other contestant in this relationship link.")
+        
+        return  contestant.immutable_traits.trust_threshold < self.realized_trust[my_name[0]]

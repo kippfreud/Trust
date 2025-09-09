@@ -6,14 +6,14 @@ from components.Signals import SplitSignal
 from components.SocialNetwork import SocialNetwork
 from components.InteractionStrategies import InteractionStrategy, BeliefInteractionChoice
 from components.Traits import ImmutableTraits, MutableTraits
-from components.VotingStrategies import VotingStrategy
+from components.VotingStrategies import VotingStrategy, TrustVoteChoice
 
 
 class Contestant:
     def __init__(
         self,
         name: str,
-        voting_strategy: VotingStrategy,
+        voting_strategy: VotingStrategy = TrustVoteChoice(),
         interaction_strategy: InteractionStrategy = BeliefInteractionChoice(),
         immutable_traits: ImmutableTraits = ImmutableTraits(),
         mutable_traits: MutableTraits = MutableTraits(),
@@ -25,20 +25,7 @@ class Contestant:
         self.immutable_traits = immutable_traits
         self.mutable_traits = mutable_traits
         self.estimated_social_network = None
-        self.immune_from_votes = False
-
-    def generate_estimated_social_network(self, true_network):
-        if self.estimated_social_network is not None:
-            raise Exception(
-                "Trying to generate an estimated social network where one already exists."
-            )
-        self.estimated_social_network = self._generate_estimated_social_network(
-            true_network
-        )
-        for neighbour, data in self.estimated_social_network.graph[self].items():
-            data["relationship"].trust_var[neighbour.name] = 100
-        for c in self.estimated_social_network.iter_contestants():
-            c.estimated_social_network = self.estimated_social_network
+        self.immune_from_votes = False # TODO: Make it a mutable trait?
 
     def MC_simulate_games(self, n=100):
         """Will run `n` simulations of the game, based on the estimated social network of the contestant"""
@@ -91,7 +78,20 @@ class Contestant:
         val_less = min(edge_more.realized_trust[more_trusted.name], edge_less.realized_trust[less_trusted.name])
         edge_more.realized_trust[more_trusted.name] = val_more
         edge_less.realized_trust[less_trusted.name] = val_less  
-        print(edge_more, edge_less)   
+        print(edge_more, edge_less)
+
+    def update_trust_threshold(self, declared):
+        """
+        Update the believed trust threshold based on whether agents declare the agent kicked out was above or below it.
+        """
+        trusts = []
+        for neighbour, data in self.estimated_social_network.graph[self].items():
+            if neighbour in declared.graph.nodes:
+                declared_trust = declared.graph[self][neighbour]["relationship"].realized_trust[self.name]
+                if declared_trust is not None:
+                    trusts.append(declared_trust)
+        if trusts:
+            self.immutable_traits.trust_threshold = sum(trusts) / len(trusts) 
 
     def get_vote(self):
         return self.voting_strategy.choose(self)
@@ -102,16 +102,31 @@ class Contestant:
                   "latest_vote":latest_vote}
         return self.interaction_strategy.choose(**params)
         
-    def simulate_vote():
-        # TODO: Choose how to simulate votes
-        return None 
-
     def _generate_random_name(self, length=6):
         # Fallback method in case no name is provided.
         return "".join(random.choices(string.ascii_uppercase, k=length))
 
-    def _generate_estimated_social_network(self, true_network: SocialNetwork):
-        return deepcopy(true_network)
+    def _generate_estimated_social_network(self, first_impression: SocialNetwork):
+        if self.estimated_social_network is not None:
+            raise Exception(
+                "Trying to generate an estimated social network where one already exists."
+            )
+
+        self.estimated_social_network = deepcopy(first_impression)
+        
+        # Link the real self and the estimated self
+        myself = self.estimated_social_network.get_contestant_by_name(self.name)
+
+        self.immune_from_votes = True
+        for neighbour, data in self.estimated_social_network.graph[myself].items():
+            # In the voter's mind, all neighbours observe the same network as them
+            neighbour.estimated_social_network = self.estimated_social_network 
+            neighbour.voting_strategy = TrustVoteChoice()
+
+            # Check if the contestant believes they are safe from elimination
+            if not data["relationship"].safe_link(neighbour): self.immune_from_votes = False
+        
+        print(f"{self.name} thinks they are {'safe' if self.immune_from_votes else 'not safe'} from elimination.")
 
     def __hash__(self):
         return hash(self.name)

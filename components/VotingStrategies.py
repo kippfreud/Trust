@@ -23,8 +23,8 @@ class RandomVoteChoice(VotingStrategy):
 class TrustVoteChoice(VotingStrategy):
     """
     Trust-based vote: Split if voter trusts all its neighbours at least voter.trust_threshold
+    Otherwise, vote out the agent they trust the least.
     """
-
     def choose(self, voter):
         trust = {
             c: t for c, t in voter.get_true_trust().items() if not c.immune_from_votes
@@ -44,3 +44,27 @@ class TrustVoteChoice(VotingStrategy):
                 np.where(trust_voter[:, 1] == np.min(trust_voter[:, 1]))[0]
             )
             return trust_voter[vote_out, 0]
+
+class BackwardsInductionVote(VotingStrategy):
+    """
+    As per eq. (1)
+    Agents vote to split if they trust everyon above a certain threshold. 
+    Otherwise, they vote out the agent who maximises their expected reward. 
+    """
+    def choose(self, voter, update_graph_strategy=None):
+        if voter.immune_from_votes:
+            return SplitSignal
+        elif not update_graph_strategy:
+            # Assume static graph
+            voting_profile = {}
+            for c in voter.estimated_social_network.get_all_contestants():
+                if c.name is not voter.name:
+                    voting_profile[c.name] = c.voting_strategy.choose(c)
+            print(voting_profile)
+
+            # Predicted outcomes
+            return TrustVoteChoice().choose(voter)
+            
+        else:
+            # TODO: Implement dynamic graph update strategy
+            return RandomVoteChoice().choose(voter)           
